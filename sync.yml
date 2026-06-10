@@ -1,0 +1,27 @@
+name: Sync to Portfolio
+
+on:
+  push:
+    branches: [ main, master ]
+  create:
+  delete:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync repo to portfolio
+        run: |
+          curl -X POST https://iftikhor.vercel.app/api/sync-github \
+            -H "Content-Type: application/json" \
+            -d '{
+              "action": "push",
+              "repository": {
+                "full_name": "${{ github.repository }}",
+                "name": "${{ github.event.repository.name }}",
+                "html_url": "${{ github.event.repository.html_url }}",
+                "homepage": "${{ github.event.repository.homepage }}",
+                "description": "${{ github.event.repository.description }}",
+                "languages_url": "https://api.github.com/repos/${{ github.repository }}/languages"
+              }
+            }'
