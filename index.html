@@ -21,10 +21,10 @@
   <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
 
-  <!-- 2. Supabase — React dan keyin, Babel dan OLDIN -->
+  <!-- 2. Supabase — React->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
-  <!-- 3. Supabase client — sb obyektini yaratadi -->
+  <!-- 3. Supabase client-->
   <script>
     const SUPABASE_URL = "https://zazmjpbblmhxtuvsxpkv.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inphem1qcGJibG1oeHR1dnN4cGt2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MDAzOTgsImV4cCI6MjA4ODQ3NjM5OH0.SY4ZsJ0OJiiPGZaZP9EjEutUbe4QwzzuRE-vW-0F8J4";
@@ -34,7 +34,7 @@
     window.sb = sb;
   </script>
 
-  <!-- 4. API — sb tayyor bo'lgandan keyin -->
+  <!-- 4. API — sb-->
   <script>
     window.API = {
       async getProfiles({ limit=20, category, search }={}) {
@@ -110,10 +110,10 @@
     };
   </script>
 
-  <!-- 5. Babel — eng oxirida -->
+  <!-- 5. Babel-->
   <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
 
-  <!-- 6. React komponentlar — Babel tayyor bo'lgandan keyin -->
+  <!-- 6. React komponentlar  -->
   <script type="text/babel" data-presets="react" src="src/icons.jsx"></script>
   <script type="text/babel" data-presets="react" src="src/data.jsx"></script>
   <script type="text/babel" data-presets="react" src="src/auth.js"></script>
