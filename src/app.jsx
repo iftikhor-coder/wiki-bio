@@ -11,14 +11,14 @@ const parseRoute = () => {
   if (segs[0] === "p" && segs[1]) return { page: "profile", id: segs[1] };
   if (segs[0] === "create") return { page: "create" };
   if (segs[0] === "dashboard") return { page: "dashboard" };
-  if (segs[0] === "admin") return { page: "admin" };
+  if (segs[0] === "alizeybek") return { page: "admin" };
   if (segs[0] === "browse") return { page: "browse", q };
   if (segs[0] === "seo-guide") return { page: "seo" };
   if (segs[0] === "about") return { page: "about" };
   return { page: "home" };
 };
 
-/* - Browse page - */
+/* ---------- Browse page ---------- */
 const BrowsePage = ({ q }) => {
   const [query, setQuery] = useStateApp(q.q || "");
   const [cat, setCat] = useStateApp(q.cat || "All");
@@ -49,7 +49,7 @@ const BrowsePage = ({ q }) => {
   );
 };
 
-/* - SEO Guide - */
+/* -SEO Guide-  */
 const SEOGuidePage = () => (
   <div>
     <PageHeader eyebrow="The WikiBio Guide · No. 03" title="How to get into the" italicWord="Knowledge Panel." subtitle="A plain-English guide to schema.org structured data and indexing." />
@@ -88,7 +88,7 @@ const SEOGuidePage = () => (
   </div>
 );
 
-/* - About -- */
+/* - About - */
 const AboutPage = () => (
   <div>
     <PageHeader eyebrow="About · Vol. III" title="A free knowledge" italicWord="commons." subtitle="WikiBio is an open biographical platform. Anyone can publish, anyone can read, and Google indexes it." />
@@ -102,7 +102,7 @@ const AboutPage = () => (
   </div>
 );
 
-/* -- TopNav with Auth --- */
+/* ---------- TopNav with Auth ---------- */
 const TopNavWithAuth = ({ route }) => {
   const { user, profile, loading } = useAuth();
   const [showAuth, setShowAuth] = useStateApp(false);
@@ -141,14 +141,6 @@ const TopNavWithAuth = ({ route }) => {
           {!loading && (
             user ? (
               <>
-                <a href="#/dashboard" className="hide-mobile" style={linkStyle(route.page==="dashboard")}>
-                  <I.bell size={14}/> Dashboard
-                </a>
-                {profile?.role === "admin" || profile?.role === "superadmin" ? (
-                  <a href="#/admin" className="hide-mobile" style={linkStyle(route.page==="admin")}>
-                    <I.shield size={14}/> Admin
-                  </a>
-                ) : null}
                 <button onClick={handleLogout} style={{fontSize:13, color:"var(--ink-3)"}}>
                   Chiqish
                 </button>
@@ -175,7 +167,7 @@ const TopNavWithAuth = ({ route }) => {
   );
 };
 
-/* -- App - */
+/* -app ----  */
 const App = () => {
   const [route, setRoute] = useStateApp(parseRoute());
 
