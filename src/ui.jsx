@@ -158,14 +158,13 @@ const ProfileCard = ({ profile, variant = "default", index = 0 }) => {
   const heights = { default: 380, tall: 480, short: 280, hero: 560 };
   const h = heights[variant] || 380;
   return (
-    <a href={`#/p/${profile.id}`}
-      className="card rise"
+    <a href={`#/p/${profile.slug || profile.id}`}
       style={{
         position:"relative", display:"block", padding:0, animationDelay:`${index*60}ms`,
         background:"transparent", border:"1px solid var(--line)"
       }}>
       <div className="photo-frame" style={{height:h, position:"relative"}}>
-        <Photo src={profile.photo} name={profile.name} color={profile.color}
+        <Photo src={profile.photo_url || profile.photo} name={profile.name} color={profile.color}
                style={{width:"100%", height:"100%", objectFit:"cover", filter:"saturate(.92)"}}/>
         <div style={{position:"absolute", top:14, left:14, right:14,
           display:"flex", justifyContent:"space-between", alignItems:"flex-start", zIndex:2}}>
