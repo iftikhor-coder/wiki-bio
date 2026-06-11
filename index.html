@@ -102,37 +102,32 @@
       },
       async fetchFromWikipedia(title) {
         try {
-          const [summaryRes, sectionsRes] = await Promise.all([
-            fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`),
-            fetch(`https://en.wikipedia.org/api/rest_v1/page/mobile-sections/${encodeURIComponent(title)}`)
-          ]);
-          if (!summaryRes.ok) throw new Error("Topilmadi");
-          const summary = await summaryRes.json();
-          const sections = sectionsRes.ok ? await sectionsRes.json() : null;
+          const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`);
+          if (!res.ok) throw new Error("Topilmadi");
+          const d = await res.json();
           const full_bio = [];
-          if (sections?.remaining?.sections) {
-            for (const sec of sections.remaining.sections) {
-              if (sec.toclevel === 1 && sec.line && sec.text) {
-                const tmp = document.createElement("div");
-                tmp.innerHTML = sec.text;
-                const text = tmp.innerText?.trim();
-                if (text && text.length > 50) {
-                  full_bio.push({ title: sec.line, body: text.slice(0, 2000) });
-                }
+          if (d.extract) {
+            const paragraphs = d.extract.split("\n").filter(p => p.trim().length > 50);
+            if (paragraphs.length > 1) {
+              full_bio.push({ title: "Tarjimayi hol", body: paragraphs.slice(0, 3).join("\n\n") });
+              if (paragraphs.length > 3) {
+                full_bio.push({ title: "Faoliyat", body: paragraphs.slice(3, 6).join("\n\n") });
               }
+              if (paragraphs.length > 6) {
+                full_bio.push({ title: "Shaxsiy hayot", body: paragraphs.slice(6).join("\n\n") });
+              }
+            } else {
+              full_bio.push({ title: "Biography", body: d.extract });
             }
-          }
-          if (!full_bio.length) {
-            full_bio.push({ title: "Biography", body: summary.extract || "" });
           }
           return {
             data: {
-              name: summary.title,
-              short_bio: summary.description,
+              name: d.title,
+              short_bio: d.description,
               full_bio,
-              photo_url: summary.originalimage?.source || summary.thumbnail?.source || null,
-              wikipedia_url: summary.content_urls?.desktop?.page,
-              category: summary.description || "Person",
+              photo_url: d.originalimage?.source || d.thumbnail?.source || null,
+              wikipedia_url: d.content_urls?.desktop?.page,
+              category: d.description || "Person",
             },
             error: null
           };
@@ -157,10 +152,9 @@
           status: "pending", source: "wikipedia", created_by: user?.id
         }).select().single();
       },
-
       async deleteProfile(id) {
-  return await sb.from("wb_profiles").delete().eq("id", id);
-},
+        return await sb.from("wb_profiles").delete().eq("id", id);
+      },
       async uploadPhoto(file, userId, type="portrait") {
         const ext = file.name.split(".").pop();
         const path = `${userId}/${type}-${Date.now()}.${ext}`;
