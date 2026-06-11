@@ -158,8 +158,7 @@ const ProfileCard = ({ profile, variant = "default", index = 0 }) => {
   const heights = { default: 380, tall: 480, short: 280, hero: 560 };
   const h = heights[variant] || 380;
   return (
-    <a href={`#/p/${profile.id}`}
-      className="card rise"
+    <a href={`#/p/${profile.slug || profile.id}`}
       style={{
         position:"relative", display:"block", padding:0, animationDelay:`${index*60}ms`,
         background:"transparent", border:"1px solid var(--line)"
