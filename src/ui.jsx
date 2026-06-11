@@ -164,7 +164,7 @@ const ProfileCard = ({ profile, variant = "default", index = 0 }) => {
         background:"transparent", border:"1px solid var(--line)"
       }}>
       <div className="photo-frame" style={{height:h, position:"relative"}}>
-        <Photo src={profile.photo} name={profile.name} color={profile.color}
+        <Photo src={profile.photo_url || profile.photo} name={profile.name} color={profile.color}
                style={{width:"100%", height:"100%", objectFit:"cover", filter:"saturate(.92)"}}/>
         <div style={{position:"absolute", top:14, left:14, right:14,
           display:"flex", justifyContent:"space-between", alignItems:"flex-start", zIndex:2}}>
