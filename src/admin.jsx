@@ -1,8 +1,8 @@
-/* Admin Panel (real Supabase) */
+/* WikiBio — Admin Panel (real Supabase) */
 
 const { useState: useStateA, useEffect: useEffectA, useMemo: useMemoA } = React;
 
-/* --- Sparkline -- */
+/* ---------- Sparkline ---------- */
 const Sparkline = ({ points, color, width=120, height=28 }) => {
   const max = Math.max(...points), min = Math.min(...points);
   const range = max - min || 1;
@@ -15,7 +15,7 @@ const Sparkline = ({ points, color, width=120, height=28 }) => {
   );
 };
 
-/* - StatBlock ---- */
+/* ---------- StatBlock ---------- */
 const StatBlock = ({ label, value, delta, sparkline }) => (
   <div style={{padding:"28px 0", display:"grid", gap:8}}>
     <div className="label-sm">{label}</div>
@@ -28,7 +28,7 @@ const StatBlock = ({ label, value, delta, sparkline }) => (
   </div>
 );
 
-/* ---- Sidebar - */
+/* ---------- Sidebar ---------- */
 const ADMIN_SECTIONS = [
   {id:"overview",  label:"Overview",     icon:I.bars},
   {id:"pending",   label:"Pending",      icon:I.bell},
@@ -75,7 +75,7 @@ const AdminSidebar = ({ active, setActive, pendingCount }) => (
   </aside>
 );
 
-/* - Overview -- */
+/* ---------- Overview ---------- */
 const AdminOverview = ({ stats }) => (
   <div>
     <div style={{
@@ -109,7 +109,7 @@ const AdminOverview = ({ stats }) => (
   </div>
 );
 
-/* - Pending profiles -- */
+/* ---------- Pending profillar ---------- */
 const AdminPending = ({ onApprove }) => {
   const [list, setList] = useStateA([]);
   const [loading, setLoading] = useStateA(true);
@@ -152,7 +152,7 @@ const AdminPending = ({ onApprove }) => {
           border:"1px solid var(--line)", marginBottom:16, padding:24,
           display:"grid", gridTemplateColumns:"120px 1fr auto", gap:24, alignItems:"start"
         }}>
-          {/* Photo */}
+          {/* Rasm */}
           <div style={{aspectRatio:"4/5", overflow:"hidden", background:"var(--bg-3)"}}>
             {p.photo_url
               ? <img src={p.photo_url} style={{width:"100%", height:"100%", objectFit:"cover"}}/>
@@ -162,7 +162,7 @@ const AdminPending = ({ onApprove }) => {
             }
           </div>
 
-          {/* Info */}
+          {/* Ma'lumot */}
           <div>
             <div style={{display:"flex", gap:10, alignItems:"baseline", marginBottom:6}}>
               <span className="serif" style={{fontSize:22, fontWeight:400}}>{p.name}</span>
@@ -207,7 +207,7 @@ const AdminPending = ({ onApprove }) => {
   );
 };
 
-/* --- All profiles - */
+/* ---------- Barcha profillar ---------- */
 const AdminAllProfiles = () => {
   const [list, setList] = useStateA([]);
   const [loading, setLoading] = useStateA(true);
@@ -217,6 +217,13 @@ const AdminAllProfiles = () => {
     const { data } = await API.getAllProfiles({ status: statusFilter||undefined });
     setList(data||[]);
     setLoading(false);
+  };
+
+  const deleteProfile = async (id, name) => {
+    if (!window.confirm(`"${name}" profilini o'chirasizmi? Bu amalni ortga qaytarib bo'lmaydi!`)) return;
+    const { error } = await API.deleteProfile(id);
+    if (!error) setList(l => l.filter(p => p.id !== id));
+    else alert("Xato: " + error.message);
   };
 
   useEffectA(() => { load(); }, [statusFilter]);
@@ -240,6 +247,7 @@ const AdminAllProfiles = () => {
               <th style={{padding:"10px 12px", textAlign:"left", fontSize:10, letterSpacing:".18em", borderBottom:"1px solid var(--line)"}}>KATEGORIYA</th>
               <th style={{padding:"10px 12px", textAlign:"left", fontSize:10, letterSpacing:".18em", borderBottom:"1px solid var(--line)"}}>HOLAT</th>
               <th style={{padding:"10px 12px", textAlign:"left", fontSize:10, letterSpacing:".18em", borderBottom:"1px solid var(--line)"}}>SANA</th>
+              <th style={{padding:"10px 12px", textAlign:"right", fontSize:10, letterSpacing:".18em", borderBottom:"1px solid var(--line)"}}>AMAL</th>
             </tr>
           </thead>
           <tbody>
@@ -258,6 +266,12 @@ const AdminAllProfiles = () => {
                 <td style={{padding:"14px 12px", color:"var(--ink-3)", fontSize:12}}>
                   {new Date(p.created_at).toLocaleDateString()}
                 </td>
+                <td style={{padding:"14px 12px", textAlign:"right"}}>
+                  <button onClick={()=>deleteProfile(p.id, p.name)}
+                    style={{padding:"6px 12px", border:"1px solid var(--accent-red)", color:"var(--accent-red)", fontSize:12, cursor:"pointer"}}>
+                    <I.x size={12}/> O'chirish
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -267,7 +281,7 @@ const AdminAllProfiles = () => {
   );
 };
 
-/* - Wikipedia Import - */
+/* ---------- Wikipedia Import ---------- */
 const AdminImport = () => {
   const [query, setQuery] = useStateA("");
   const [result, setResult] = useStateA(null);
@@ -334,7 +348,7 @@ const AdminImport = () => {
   );
 };
 
-/* --- Admin shell - */
+/* ---------- Admin shell ---------- */
 const AdminPage = () => {
   const [active, setActive] = useStateA("overview");
   const [stats, setStats] = useStateA({total:0, pending:0, live:0, users:0});
@@ -346,7 +360,7 @@ const AdminPage = () => {
 
   const reloadStats = () => API.getStats().then(s => setStats(s));
 
-  // just a view admin
+  // Faqat admin ko'ra oladi
   if (!profile || !["admin","superadmin"].includes(profile.role)) {
     return (
       <div style={{padding:"80px 0", textAlign:"center"}}>
