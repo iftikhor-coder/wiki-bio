@@ -4,37 +4,133 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>WikiBio — The free knowledge platform built by the people, for Google.</title>
-
-  <!-- SEO meta -->
-  <meta name="description" content="A free, open knowledge platform. Create your profile and appear on Google just like Wikipedia." />
-  <meta property="og:title" content="WikiBio — Free knowledge platform" />
-  <meta property="og:description" content="Create your profile. Appear on Google." />
+  <meta name="description" content="A free, open knowledge platform. Create your profile and appear on Google just like Wikipedia. No committees, no notability bar." />
   <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://wiki-bio.vercel.app/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="WikiBio — Free knowledge platform" />
+  <meta property="og:description" content="Create your profile. Appear on Google like Wikipedia." />
+  <meta property="og:url" content="https://wiki-bio.vercel.app" />
+  <meta property="og:site_name" content="WikiBio" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="WikiBio — Free knowledge platform" />
+  <meta name="twitter:description" content="Create your profile. Appear on Google like Wikipedia." />
+
+  <!-- Sitemap hint -->
+  <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div id="root"></div>
   <div class="grain"></div>
 
-  <!-- React -->
-  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+  <!-- 1. React -->
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
 
-  <!-- Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <!-- 2. Supabase -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
 
-  <!-- WikiBio scripts -->
+  <!-- 3. sb obyekti -->
+  <script>
+    window.sb = window.supabase.createClient(
+      "https://zazmjpbblmhxtuvsxpkv.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inphem1qcGJibG1oeHR1dnN4cGt2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MDAzOTgsImV4cCI6MjA4ODQ3NjM5OH0.SY4ZsJ0OJiiPGZaZP9EjEutUbe4QwzzuRE-vW-0F8J4",
+      { auth: { autoRefreshToken: true, persistSession: true, detectSessionInUrl: true } }
+    );
+  </script>
+
+  <!-- 4. API -->
+  <script>
+    window.API = {
+      async getProfiles({ limit=20, category, search }={}) {
+        let q = sb.from("wb_profiles")
+          .select("id,slug,name,category,short_bio,photo_url,tier,views_count,nationality,birth_date,tags")
+          .in("status",["approved","live"])
+          .order("views_count",{ascending:false})
+          .limit(limit);
+        if (category && category!=="All") q = q.eq("category",category);
+        if (search) q = q.ilike("name",`%${search}%`);
+        return await q;
+      },
+      async getProfile(slug) {
+        return await sb.from("wb_profiles").select("*").eq("slug",slug).in("status",["approved","live"]).single();
+      },
+      async createProfile(profileData, userId) {
+        const slug = profileData.name.toLowerCase().replace(/[^a-z0-9\s-]/g,"").replace(/\s+/g,"-").replace(/-+/g,"-");
+        const schemaJson = {
+          "@context":"https://schema.org",
+          "@type": profileData.category==="Brand"?"Organization":"Person",
+          "name": profileData.name, "jobTitle": profileData.category,
+          "birthDate": profileData.birth_date, "nationality": profileData.nationality,
+          "description": profileData.short_bio, "image": profileData.photo_url,
+          "url": `https://wiki-bio.vercel.app/#/p/${slug}`
+        };
+        return await sb.from("wb_profiles").insert({...profileData, slug, schema_json:schemaJson, status:"pending", created_by:userId}).select().single();
+      },
+      async getPendingProfiles() {
+        return await sb.from("wb_profiles").select("*").eq("status","pending").order("created_at",{ascending:false});
+      },
+      async getAllProfiles({ limit=50, status, page=0 }={}) {
+        let q = sb.from("wb_profiles").select("*",{count:"exact"}).order("created_at",{ascending:false}).range(page*limit,(page+1)*limit-1);
+        if (status) q = q.eq("status",status);
+        return await q;
+      },
+      async reviewProfile(profileId, action, reviewerId, note="") {
+        const newStatus = action==="approve"?"live":action==="reject"?"rejected":"pending";
+        const { error:pErr } = await sb.from("wb_profiles").update({status:newStatus, published_at:action==="approve"?new Date().toISOString():null}).eq("id",profileId);
+        if (pErr) return { error:pErr };
+        return await sb.from("wb_reviews").insert({profile_id:profileId, reviewer_id:reviewerId, action, note}).select().single();
+      },
+      async getStats() {
+        const [total,pending,live,users] = await Promise.all([
+          sb.from("wb_profiles").select("id",{count:"exact",head:true}),
+          sb.from("wb_profiles").select("id",{count:"exact",head:true}).eq("status","pending"),
+          sb.from("wb_profiles").select("id",{count:"exact",head:true}).eq("status","live"),
+          sb.from("wb_users").select("id",{count:"exact",head:true}),
+        ]);
+        return { total:total.count||0, pending:pending.count||0, live:live.count||0, users:users.count||0 };
+      },
+      async fetchFromWikipedia(title) {
+        try {
+          const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`);
+          if (!res.ok) throw new Error("Topilmadi");
+          const d = await res.json();
+          return { data:{ name:d.title, short_bio:d.description, full_bio:[{title:"Biography",body:d.extract}], photo_url:d.thumbnail?.source||null, wikipedia_url:d.content_urls?.desktop?.page, category:d.description||"Person" }, error:null };
+        } catch(e) { return { data:null, error:e.message }; }
+      },
+      async saveImport(wikiTitle, rawData) {
+        return await sb.from("wb_imports").insert({wikipedia_title:wikiTitle, wikipedia_url:rawData.wikipedia_url, raw_data:rawData, status:"pending"}).select().single();
+      },
+      async uploadPhoto(file, userId, type="portrait") {
+        const ext = file.name.split(".").pop();
+        const path = `${userId}/${type}-${Date.now()}.${ext}`;
+        const { error } = await sb.storage.from("wb-photos").upload(path, file, {upsert:true});
+        if (error) return { url:null, error };
+        const { data:{ publicUrl } } = sb.storage.from("wb-photos").getPublicUrl(path);
+        return { url:publicUrl, error:null };
+      }
+    };
+  </script>
+
+  <!-- 5. Babel -->
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+
+  <!-- 6. SEO -->
+  <script src="src/seo.js"></script>
+
+  <!-- 7. Komponentlar -->
   <script type="text/babel" data-presets="react" src="src/icons.jsx"></script>
   <script type="text/babel" data-presets="react" src="src/data.jsx"></script>
-  <script src="src/supabase.js"></script>
   <script type="text/babel" data-presets="react" src="src/auth.js"></script>
-  <script src="src/api.js"></script>
   <script type="text/babel" data-presets="react" src="src/ui.jsx"></script>
   <script type="text/babel" data-presets="react" src="src/home.jsx"></script>
   <script type="text/babel" data-presets="react" src="src/profile.jsx"></script>
