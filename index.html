@@ -157,6 +157,10 @@
           status: "pending", source: "wikipedia", created_by: user?.id
         }).select().single();
       },
+
+      async deleteProfile(id) {
+  return await sb.from("wb_profiles").delete().eq("id", id);
+},
       async uploadPhoto(file, userId, type="portrait") {
         const ext = file.name.split(".").pop();
         const path = `${userId}/${type}-${Date.now()}.${ext}`;
