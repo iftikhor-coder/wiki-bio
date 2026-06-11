@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>WikiBio — The free knowledge platform built by the people, for Google.</title>
-<<<<<<< HEAD
   <meta name="description" content="A free, open knowledge platform. Create your profile and appear on Google just like Wikipedia. No committees, no notability bar." />
+  <meta name="google-site-verification" content="1Jy0h8BjupX3avdqcMiRZIUub_YTYldGjVecyMinNyA" />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://wiki-bio.vercel.app/" />
 
@@ -24,10 +24,6 @@
   <!-- Sitemap hint -->
   <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
 
-=======
-  <meta name="description" content="A free, open knowledge platform. Create your profile and appear on Google just like Wikipedia." />
-  <meta name="robots" content="index, follow" />
->>>>>>> 0cc9d463fa95bfacd355f20bc23fd2cdc86cc741
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -74,20 +70,10 @@
         const schemaJson = {
           "@context":"https://schema.org",
           "@type": profileData.category==="Brand"?"Organization":"Person",
-<<<<<<< HEAD
           "name": profileData.name, "jobTitle": profileData.category,
           "birthDate": profileData.birth_date, "nationality": profileData.nationality,
           "description": profileData.short_bio, "image": profileData.photo_url,
           "url": `https://wiki-bio.vercel.app/#/p/${slug}`
-=======
-          "name": profileData.name,
-          "jobTitle": profileData.category,
-          "birthDate": profileData.birth_date,
-          "nationality": profileData.nationality,
-          "description": profileData.short_bio,
-          "image": profileData.photo_url,
-          "url": `https://wikibio.uz/${slug}`
->>>>>>> 0cc9d463fa95bfacd355f20bc23fd2cdc86cc741
         };
         return await sb.from("wb_profiles").insert({...profileData, slug, schema_json:schemaJson, status:"pending", created_by:userId}).select().single();
       },
@@ -139,14 +125,10 @@
   <!-- 5. Babel -->
   <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
 
-<<<<<<< HEAD
   <!-- 6. SEO -->
   <script src="src/seo.js"></script>
 
   <!-- 7. Komponentlar -->
-=======
-  <!-- 6. Komponentlar -->
->>>>>>> 0cc9d463fa95bfacd355f20bc23fd2cdc86cc741
   <script type="text/babel" data-presets="react" src="src/icons.jsx"></script>
   <script type="text/babel" data-presets="react" src="src/data.jsx"></script>
   <script type="text/babel" data-presets="react" src="src/auth.js"></script>
