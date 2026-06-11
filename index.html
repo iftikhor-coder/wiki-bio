@@ -104,7 +104,7 @@
   try {
     const [sumRes, txtRes] = await Promise.all([
       fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`),
-      fetch(`https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(title)}&prop=extracts&explaintext=1&exsectionformat=wiki&format=json&origin=*`)
+      fetch(`https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(title)}&prop=extracts&explaintext=1&exsectionformat=plain&exchars=50000&format=json&origin=*`)
     ]);
     if (!sumRes.ok) throw new Error("Topilmadi");
     const d = await sumRes.json();
