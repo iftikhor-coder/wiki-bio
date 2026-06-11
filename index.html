@@ -102,14 +102,60 @@
       },
       async fetchFromWikipedia(title) {
         try {
-          const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`);
-          if (!res.ok) throw new Error("Topilmadi");
-          const d = await res.json();
-          return { data:{ name:d.title, short_bio:d.description, full_bio:[{title:"Biography",body:d.extract}], photo_url:d.thumbnail?.source||null, wikipedia_url:d.content_urls?.desktop?.page, category:d.description||"Person" }, error:null };
+          const [summaryRes, sectionsRes] = await Promise.all([
+            fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`),
+            fetch(`https://en.wikipedia.org/api/rest_v1/page/mobile-sections/${encodeURIComponent(title)}`)
+          ]);
+          if (!summaryRes.ok) throw new Error("Topilmadi");
+          const summary = await summaryRes.json();
+          const sections = sectionsRes.ok ? await sectionsRes.json() : null;
+          const full_bio = [];
+          if (sections?.remaining?.sections) {
+            for (const sec of sections.remaining.sections) {
+              if (sec.toclevel === 1 && sec.line && sec.text) {
+                const tmp = document.createElement("div");
+                tmp.innerHTML = sec.text;
+                const text = tmp.innerText?.trim();
+                if (text && text.length > 50) {
+                  full_bio.push({ title: sec.line, body: text.slice(0, 2000) });
+                }
+              }
+            }
+          }
+          if (!full_bio.length) {
+            full_bio.push({ title: "Biography", body: summary.extract || "" });
+          }
+          return {
+            data: {
+              name: summary.title,
+              short_bio: summary.description,
+              full_bio,
+              photo_url: summary.originalimage?.source || summary.thumbnail?.source || null,
+              wikipedia_url: summary.content_urls?.desktop?.page,
+              category: summary.description || "Person",
+            },
+            error: null
+          };
         } catch(e) { return { data:null, error:e.message }; }
       },
       async saveImport(wikiTitle, rawData) {
-        return await sb.from("wb_imports").insert({wikipedia_title:wikiTitle, wikipedia_url:rawData.wikipedia_url, raw_data:rawData, status:"pending"}).select().single();
+        const slug = rawData.name.toLowerCase().replace(/[^a-z0-9\s-]/g,"").replace(/\s+/g,"-").replace(/-+/g,"-");
+        const { data: existing } = await sb.from("wb_profiles").select("id").eq("slug",slug).maybeSingle();
+        if (existing) return { data: existing, error: null };
+        const schemaJson = {
+          "@context": "https://schema.org", "@type": "Person",
+          "name": rawData.name, "description": rawData.short_bio,
+          "image": rawData.photo_url,
+          "url": `https://wiki-bio.vercel.app/#/p/${slug}`,
+          "sameAs": [rawData.wikipedia_url]
+        };
+        const { data: { user } } = await sb.auth.getUser();
+        return await sb.from("wb_profiles").insert({
+          name: rawData.name, slug, category: "Musician",
+          short_bio: rawData.short_bio, full_bio: rawData.full_bio,
+          photo_url: rawData.photo_url, schema_json: schemaJson,
+          status: "pending", source: "wikipedia", created_by: user?.id
+        }).select().single();
       },
       async uploadPhoto(file, userId, type="portrait") {
         const ext = file.name.split(".").pop();
