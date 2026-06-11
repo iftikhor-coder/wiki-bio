@@ -104,30 +104,29 @@
   try {
     const [sumRes, txtRes] = await Promise.all([
       fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`),
-      fetch(`https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(title)}&prop=extracts&explaintext=1&exsectionformat=plain&format=json&origin=*`)
+      fetch(`https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(title)}&prop=extracts&explaintext=1&exsectionformat=wiki&format=json&origin=*`)
     ]);
     if (!sumRes.ok) throw new Error("Topilmadi");
     const d = await sumRes.json();
     const txtData = txtRes.ok ? await txtRes.json() : null;
     const pages = txtData?.query?.pages;
     const pageId = pages ? Object.keys(pages)[0] : null;
-    const fullText = pageId && pages[pageId].extract ? pages[pageId].extract : d.extract || "";
+    const fullText = pageId && pages[pageId]?.extract ? pages[pageId].extract : d.extract || "";
     const full_bio = [];
-    const sections = fullText.split(/\n==\s*(.+?)\s*==\n/);
-    if (sections.length > 1) {
-      for (let i = 1; i < sections.length - 1; i += 2) {
-        const secTitle = sections[i].trim();
-        const secBody = sections[i+1]?.trim();
+    const parts = fullText.split(/\n={2,3}([^=]+)={2,3}\n/);
+    if (parts.length > 1) {
+      for (let i = 1; i < parts.length - 1; i += 2) {
+        const secTitle = parts[i].trim();
+        const secBody = parts[i+1]?.replace(/\n={2,4}[^=]+=+\n/g, "\n").trim();
         if (secTitle && secBody && secBody.length > 50) {
           full_bio.push({ title: secTitle, body: secBody.slice(0, 3000) });
         }
       }
     }
     if (!full_bio.length && fullText) {
-      const paragraphs = fullText.split("\n\n").filter(p => p.trim().length > 80);
-      full_bio.push({ title: "Tarjimayi hol", body: paragraphs.slice(0,4).join("\n\n") });
-      if (paragraphs.length > 4) full_bio.push({ title: "Faoliyat", body: paragraphs.slice(4,8).join("\n\n") });
-      if (paragraphs.length > 8) full_bio.push({ title: "Shaxsiy hayot", body: paragraphs.slice(8,12).join("\n\n") });
+      const intro = fullText.split(/\n={2}/)[0].trim();
+      const paragraphs = intro.split("\n\n").filter(p => p.trim().length > 80);
+      full_bio.push({ title: "Tarjimayi hol", body: paragraphs.slice(0,5).join("\n\n") });
     }
     return {
       data: { name: d.title, short_bio: d.description, full_bio,
