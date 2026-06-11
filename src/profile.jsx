@@ -9,7 +9,7 @@ const TOC = ({ items }) => (
     <ul style={{listStyle:"none", padding:0, margin:0, display:"grid", gap:0, borderLeft:"1px solid var(--line)"}}>
       {items.map((s,i) => (
         <li key={s.id}>
-          <a href={`#sec-${s.id}`} style={{
+          <a onClick={e=>{e.preventDefault(); const el=document.getElementById(`sec-${s.id}`); if(el) el.scrollIntoView({behavior:"smooth"});}} href="#" style={{
             display:"flex", gap:14, padding:"10px 16px", fontSize:13,
             color:"var(--ink-2)", borderLeft:"1px solid transparent", marginLeft:-1
           }}
