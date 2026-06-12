@@ -96,48 +96,34 @@ const AboutPage = () => (
 /* ---------- TopNav with Auth ---------- */
 /* ---------- LangSelector ---------- */
 const LangSelector = () => {
-  const [open, setOpen] = useStateApp(false);
   const [current, setCurrent] = useStateApp(getLang());
 
   const select = (code) => {
     setLang(code);
     setCurrent(code);
-    setOpen(false);
   };
 
-  const cur = LANGUAGES.find(l => l.code === current) || LANGUAGES[0];
-
   return (
-    <div style={{position:"relative"}}>
-      <button onClick={()=>setOpen(o=>!o)} style={{
-        display:"flex", alignItems:"center", gap:6, fontSize:13,
-        color:"var(--ink-2)", border:"1px solid var(--line-2)",
-        padding:"6px 10px", borderRadius:2
-      }}>
-        <span>{cur.flag}</span>
-        <span className="mono" style={{fontSize:11, letterSpacing:".1em"}}>{cur.code.toUpperCase()}</span>
-        <I.chevD size={12}/>
-      </button>
-      {open && (
-        <div style={{
-          position:"absolute", top:"calc(100% + 6px)", right:0,
-          background:"var(--bg-2)", border:"1px solid var(--line-2)",
-          zIndex:100, minWidth:140, boxShadow:"var(--shadow)"
-        }}>
-          {LANGUAGES.map(l => (
-            <button key={l.code} onClick={()=>select(l.code)} style={{
-              display:"flex", alignItems:"center", gap:10,
-              padding:"10px 14px", width:"100%", textAlign:"left",
-              fontSize:13, color: current===l.code ? "var(--gold)" : "var(--ink-2)",
-              background: current===l.code ? "color-mix(in srgb, var(--gold) 8%, transparent)" : "transparent",
-              borderLeft: current===l.code ? "2px solid var(--gold)" : "2px solid transparent",
-            }}>
-              <span>{l.flag}</span>
-              <span>{l.label}</span>
-            </button>
-          ))}
-        </div>
-      )}
+    <div style={{display:"flex", alignItems:"center", gap:8}}>
+      {/* O'z tillar: uz, en, tr */}
+      <div style={{display:"flex", gap:4}}>
+        {LANGUAGES.map(l => (
+          <button key={l.code} onClick={()=>select(l.code)} title={l.label} style={{
+            padding:"4px 8px", fontSize:11, fontFamily:"var(--font-mono)",
+            letterSpacing:".1em", cursor:"pointer",
+            color: current===l.code ? "var(--gold)" : "var(--ink-3)",
+            border: current===l.code ? "1px solid var(--gold)" : "1px solid transparent",
+            background: current===l.code ? "color-mix(in srgb, var(--gold) 8%, transparent)" : "transparent",
+            borderRadius:2
+          }}>
+            {l.flag}
+          </button>
+        ))}
+      </div>
+      {/* Google Translate - barcha tillar */}
+      <div id="google_translate_element" style={{
+        display:"flex", alignItems:"center"
+      }}/>
     </div>
   );
 };
