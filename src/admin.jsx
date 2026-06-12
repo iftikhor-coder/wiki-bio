@@ -35,6 +35,7 @@ const ADMIN_SECTIONS = [
   {id:"profiles",  label:"All Profiles", icon:I.users},
   {id:"imports",   label:"Wikipedia Import", icon:I.globe},
   {id:"analytics", label:"Analytics",    icon:I.trend},
+  {id:"dashboard", label:"Dashboard",    icon:I.eye},
 ];
 
 const AdminSidebar = ({ active, setActive, pendingCount }) => (
@@ -371,11 +372,12 @@ const AdminPage = () => {
   }
 
   const titles = {
-    overview: ["Admin","paneli"],
-    pending:  ["Ko'rib","chiqish"],
-    profiles: ["Barcha","profillar"],
-    imports:  ["Wikipedia","import"],
-    analytics:["Deep","analytics"],
+    overview:  ["Admin","paneli"],
+    pending:   ["Ko'rib","chiqish"],
+    profiles:  ["Barcha","profillar"],
+    imports:   ["Wikipedia","import"],
+    analytics: ["Deep","analytics"],
+    dashboard: ["Dashboard",""],
   };
 
   return (
@@ -383,7 +385,7 @@ const AdminPage = () => {
       <PageHeader dense
         eyebrow="Super Admin · WikiBio"
         title={titles[active][0]}
-        italicWord={titles[active][1]}
+        italicWord={titles[active]?.[1] || ""}
         right={
           <div style={{display:"flex", alignItems:"center", gap:14}}>
             <span className="mono" style={{fontSize:11, color:"#5DBF8E", letterSpacing:".18em"}}>● TIZIM ISHLAYAPTI</span>
@@ -399,6 +401,7 @@ const AdminPage = () => {
             {active==="profiles"  && <AdminAllProfiles/>}
             {active==="imports"   && <AdminImport/>}
             {active==="analytics" && <div style={{color:"var(--ink-3)"}}>Analytics tez kunda...</div>}
+            {active==="dashboard" && (() => { window.location.hash="#/dashboard"; return null; })()}
           </main>
         </div>
       </div>

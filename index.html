@@ -102,24 +102,39 @@
       },
       async fetchFromWikipedia(title) {
         try {
-          const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`);
-          if (!res.ok) throw new Error("Topilmadi");
-          const d = await res.json();
+          // Summary + to'liq matn
+          const [sumRes, txtRes] = await Promise.all([
+            fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`),
+            fetch(`https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(title)}&prop=extracts&explaintext=1&exsectionformat=plain&format=json&origin=*`)
+          ]);
+          if (!sumRes.ok) throw new Error("Topilmadi");
+          const d = await sumRes.json();
+          const txtData = txtRes.ok ? await txtRes.json() : null;
+
+          // To'liq matnni olish
+          const pages = txtData?.query?.pages;
+          const pageId = pages ? Object.keys(pages)[0] : null;
+          const fullText = pageId && pages[pageId].extract ? pages[pageId].extract : d.extract || "";
+
+          // Bo'limlarga ajratish
           const full_bio = [];
-          if (d.extract) {
-            const paragraphs = d.extract.split("\n").filter(p => p.trim().length > 50);
-            if (paragraphs.length > 1) {
-              full_bio.push({ title: "Tarjimayi hol", body: paragraphs.slice(0, 3).join("\n\n") });
-              if (paragraphs.length > 3) {
-                full_bio.push({ title: "Faoliyat", body: paragraphs.slice(3, 6).join("\n\n") });
+          const sections = fullText.split(/\n==\s*(.+?)\s*==\n/);
+          if (sections.length > 1) {
+            for (let i = 1; i < sections.length - 1; i += 2) {
+              const secTitle = sections[i].trim();
+              const secBody = sections[i+1]?.trim();
+              if (secTitle && secBody && secBody.length > 50) {
+                full_bio.push({ title: secTitle, body: secBody.slice(0, 3000) });
               }
-              if (paragraphs.length > 6) {
-                full_bio.push({ title: "Shaxsiy hayot", body: paragraphs.slice(6).join("\n\n") });
-              }
-            } else {
-              full_bio.push({ title: "Biography", body: d.extract });
             }
           }
+          if (!full_bio.length && fullText) {
+            const paragraphs = fullText.split("\n\n").filter(p => p.trim().length > 80);
+            full_bio.push({ title: "Tarjimayi hol", body: paragraphs.slice(0, 4).join("\n\n") });
+            if (paragraphs.length > 4) full_bio.push({ title: "Faoliyat", body: paragraphs.slice(4, 8).join("\n\n") });
+            if (paragraphs.length > 8) full_bio.push({ title: "Shaxsiy hayot", body: paragraphs.slice(8, 12).join("\n\n") });
+          }
+
           return {
             data: {
               name: d.title,
@@ -172,7 +187,10 @@
   <!-- 6. SEO -->
   <script src="src/seo.js"></script>
 
-  <!-- 7. Komponentlar -->
+  <!-- 7. i18n -->
+  <script src="src/i18n.js"></script>
+
+  <!-- 8. Komponentlar -->
   <script type="text/babel" data-presets="react" src="src/icons.jsx"></script>
   <script type="text/babel" data-presets="react" src="src/data.jsx"></script>
   <script type="text/babel" data-presets="react" src="src/auth.js"></script>

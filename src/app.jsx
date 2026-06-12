@@ -18,91 +18,131 @@ const parseRoute = () => {
   return { page: "home" };
 };
 
-/* ---------- Browse page ---------- */
+/* ---------- Browse page — real Supabase ---------- */
 const BrowsePage = ({ q }) => {
   const [query, setQuery] = useStateApp(q.q || "");
   const [cat, setCat] = useStateApp(q.cat || "All");
-  const results = PROFILES.filter(p => {
-    if (cat !== "All" && p.category !== cat) return false;
-    if (query.trim()) {
-      const lq = query.toLowerCase();
-      return p.name.toLowerCase().includes(lq) ||
-             p.category.toLowerCase().includes(lq) ||
-             (p.tags||[]).some(t => t.toLowerCase().includes(lq));
-    }
-    return true;
-  });
-  const cats = ["All", ...Array.from(new Set(PROFILES.map(p => p.category)))];
+  const [profiles, setProfiles] = useStateApp([]);
+  const [loading, setLoading] = useStateApp(true);
+
+  useEffectApp(() => {
+    setLoading(true);
+    API.getProfiles({ search: query||undefined, category: cat||undefined, limit: 50 })
+      .then(({ data }) => { setProfiles(data || []); setLoading(false); });
+  }, [query, cat]);
+
   return (
     <div>
-      <PageHeader dense eyebrow="Browse · 184,302 profiles" title="The" italicWord="archive." subtitle="Filter by category or search." />
+      <PageHeader dense eyebrow="Browse" title="The" italicWord="archive." subtitle="Barcha profillar — qidiring yoki kategoriya boyicha filtrlang." />
       <div className="wrap">
         <div style={{marginBottom:32}}><SearchBox autoFocus={false}/></div>
         <div style={{display:"flex", gap:8, flexWrap:"wrap", padding:"16px 0", borderTop:"1px solid var(--line-2)", borderBottom:"1px solid var(--line-2)", marginBottom:40}}>
-          {cats.map(c => <Pill key={c} active={cat===c} onClick={()=>setCat(c)}>{c}</Pill>)}
+          {["All", ...CATEGORIES].map(c => <Pill key={c} active={cat===c} onClick={()=>setCat(c)}>{c}</Pill>)}
         </div>
-        <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))", gap:28}}>
-          {results.map((p, i) => <ProfileCard key={p.id} profile={p} index={i}/>)}
-        </div>
+        {loading
+          ? <div className="mono" style={{color:"var(--ink-3)", letterSpacing:".18em"}}>YUKLANMOQDA...</div>
+          : !profiles.length
+            ? <div style={{padding:"60px 0", textAlign:"center", color:"var(--ink-3)"}}>Hech narsa topilmadi</div>
+            : <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))", gap:28}}>
+                {profiles.map((p,i) => <ProfileCard key={p.id} profile={p} index={i}/>)}
+              </div>
+        }
       </div>
     </div>
   );
 };
 
-/* -SEO Guide-  */
+/* ---------- SEO Guide ---------- */
 const SEOGuidePage = () => (
   <div>
-    <PageHeader eyebrow="The WikiBio Guide · No. 03" title="How to get into the" italicWord="Knowledge Panel." subtitle="A plain-English guide to schema.org structured data and indexing." />
+    <PageHeader eyebrow="WikiBio Qollanma" title="Google da qanday" italicWord="korinasiz." subtitle="schema.org strukturlangan malumot va indekslash haqida." />
     <div className="wrap" style={{paddingBottom:80}}>
-      <div style={{display:"grid", gridTemplateColumns:"200px 1fr", gap:64}}>
-        <div className="hide-mobile">
-          <TOC items={[
-            {id:"a", title:"What is a Knowledge Panel"},
-            {id:"b", title:"Eligibility signals"},
-            {id:"c", title:"Schema.org Person"},
-            {id:"d", title:"Sourcing & citations"},
-            {id:"e", title:"Indexing API"},
-            {id:"f", title:"Common pitfalls"},
-          ]}/>
-        </div>
-        <article style={{maxWidth:720}}>
-          {[
-            ["a","What is a Knowledge Panel","The Knowledge Panel is the boxed information card Google shows on the right-hand side of search results for entities — people, places, organizations."],
-            ["b","Eligibility signals","Google looks for: a single canonical URL per entity, structured data (JSON-LD/schema.org), corroborating mentions on third-party sites, an image of sufficient resolution, and consistent biographical facts across sources."],
-            ["c","Schema.org Person","We emit schema.org/Person (or Organization for brands) as JSON-LD in the page <head>. Fields like name, jobTitle, birthDate, nationality, image, and sameAs are required."],
-            ["d","Sourcing & citations","Profiles that cite at least three independent sources are 3.1× more likely to be picked up by Google's crawler in the first 72 hours."],
-            ["e","Indexing API","On publish, WikiBio submits your URL via Google's Indexing API. Free-tier profiles share a submission window (within 24h). Gold-tier profiles are submitted immediately."],
-            ["f","Common pitfalls","First-person voice, missing dates, low-resolution images, and broken sameAs links are the four most common reasons profiles don't get picked up."],
-          ].map(([id, t, body], i) => (
-            <section key={id} id={`sec-${id}`} style={{marginBottom:48}}>
-              <div style={{display:"flex", alignItems:"baseline", gap:16, marginBottom:14}}>
-                <span className="mono" style={{fontSize:12, color:"var(--gold)", letterSpacing:".18em"}}>§ {String(i+1).padStart(2,"0")}</span>
-                <h2 className="serif" style={{margin:0, fontSize:30, fontWeight:400}}>{t}</h2>
-              </div>
-              <p className={i===0?"dropcap":""} style={{fontSize:16, lineHeight:1.7, color:"var(--ink-2)", margin:0}}>{body}</p>
-            </section>
-          ))}
-        </article>
-      </div>
+      <article style={{maxWidth:720}}>
+        {[
+          ["a","Knowledge Panel nima?","Knowledge Panel — Google qidiruv natijasida ong tomonda chiqadigan malumot kartochkasi."],
+          ["b","Qanday shartlar kerak?","Google quyidagilarni talab qiladi: canonical URL, schema.org/Person JSON-LD, mustaqil manbalarda tilga olinish, sifatli rasm."],
+          ["c","schema.org/Person","WikiBio har profil uchun JSON-LD avtomatik yaratadi — name, jobTitle, birthDate, nationality, image maydonlari bilan."],
+          ["d","Manbalar","Kamida 3 ta mustaqil manbaga ega profillar Google tomonidan 3.1x tezroq indekslanadi."],
+          ["e","Google Indexing API","Profil jonlashganda WikiBio Google Indexing API orqali darhol xabar yuboradi."],
+          ["f","Keng tarqalgan xatolar","Birinchi shaxs tili, sanasiz profil, past sifatli rasm — eng keng tarqalgan muammolar."],
+        ].map(([id, t, body], i) => (
+          <section key={id} id={`sec-${id}`} style={{marginBottom:48}}>
+            <div style={{display:"flex", alignItems:"baseline", gap:16, marginBottom:14}}>
+              <span className="mono" style={{fontSize:12, color:"var(--gold)", letterSpacing:".18em"}}>S {String(i+1).padStart(2,"0")}</span>
+              <h2 className="serif" style={{margin:0, fontSize:30, fontWeight:400}}>{t}</h2>
+            </div>
+            <p style={{fontSize:16, lineHeight:1.7, color:"var(--ink-2)", margin:0}}>{body}</p>
+          </section>
+        ))}
+      </article>
     </div>
   </div>
 );
 
-/* - About - */
+/* ---------- About ---------- */
 const AboutPage = () => (
   <div>
-    <PageHeader eyebrow="About · Vol. III" title="A free knowledge" italicWord="commons." subtitle="WikiBio is an open biographical platform. Anyone can publish, anyone can read, and Google indexes it." />
+    <PageHeader eyebrow="Haqida" title="Bepul bilim" italicWord="platformasi." subtitle="WikiBio — ochiq biografik platforma. Har kim nashr etishi, oqishi mumkin va Google indekslaydi." />
     <div className="wrap-sm">
       <p className="serif dropcap" style={{fontSize:20, lineHeight:1.7, color:"var(--ink-2)"}}>
-        Wikipedia was built on the idea that every person should be able to write the story of the world.
-        WikiBio extends that idea — the page about you. We don't gate-keep on notability.
-        If you can write your story honestly and source it, it belongs in the archive.
+        Wikipedia har bir inson dunyo haqida yozishi kerak degan goyaga asoslangan.
+        WikiBio bu goyani yanada kengaytiradi — siz haqingizdagi sahifa.
+        Biz notablik talabiga ega emasmiz. Hikoyangizni togri yozsangiz — arxivga kiradi.
       </p>
     </div>
   </div>
 );
 
 /* ---------- TopNav with Auth ---------- */
+/* ---------- LangSelector ---------- */
+const LangSelector = () => {
+  const [open, setOpen] = useStateApp(false);
+  const [current, setCurrent] = useStateApp(getLang());
+
+  const select = (code) => {
+    setLang(code);
+    setCurrent(code);
+    setOpen(false);
+  };
+
+  const cur = LANGUAGES.find(l => l.code === current) || LANGUAGES[0];
+
+  return (
+    <div style={{position:"relative"}}>
+      <button onClick={()=>setOpen(o=>!o)} style={{
+        display:"flex", alignItems:"center", gap:6, fontSize:13,
+        color:"var(--ink-2)", border:"1px solid var(--line-2)",
+        padding:"6px 10px", borderRadius:2
+      }}>
+        <span>{cur.flag}</span>
+        <span className="mono" style={{fontSize:11, letterSpacing:".1em"}}>{cur.code.toUpperCase()}</span>
+        <I.chevD size={12}/>
+      </button>
+      {open && (
+        <div style={{
+          position:"absolute", top:"calc(100% + 6px)", right:0,
+          background:"var(--bg-2)", border:"1px solid var(--line-2)",
+          zIndex:100, minWidth:140, boxShadow:"var(--shadow)"
+        }}>
+          {LANGUAGES.map(l => (
+            <button key={l.code} onClick={()=>select(l.code)} style={{
+              display:"flex", alignItems:"center", gap:10,
+              padding:"10px 14px", width:"100%", textAlign:"left",
+              fontSize:13, color: current===l.code ? "var(--gold)" : "var(--ink-2)",
+              background: current===l.code ? "color-mix(in srgb, var(--gold) 8%, transparent)" : "transparent",
+              borderLeft: current===l.code ? "2px solid var(--gold)" : "2px solid transparent",
+            }}>
+              <span>{l.flag}</span>
+              <span>{l.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+
 const TopNavWithAuth = ({ route }) => {
   const { user, profile, loading } = useAuth();
   const [showAuth, setShowAuth] = useStateApp(false);
@@ -131,18 +171,21 @@ const TopNavWithAuth = ({ route }) => {
         <div className="wrap" style={{display:"flex", alignItems:"center", height:72, gap:32}}>
           <Logo/>
           <div className="hide-mobile" style={{display:"flex", alignItems:"center", gap:28, marginLeft:24}}>
-            <a href="#/" style={linkStyle(route.page==="home")}>Discover</a>
-            <a href="#/browse" style={linkStyle(route.page==="browse")}>Browse</a>
-            <a href="#/seo-guide" style={linkStyle(route.page==="seo")}>SEO Guide</a>
-            <a href="#/about" style={linkStyle(false)}>About</a>
+            <a href="#/" style={linkStyle(route.page==="home")}>{t("discover")}</a>
+            <a href="#/browse" style={linkStyle(route.page==="browse")}>{t("browse")}</a>
+            <a href="#/seo-guide" style={linkStyle(route.page==="seo")}>{t("seoGuide")}</a>
+            <a href="#/about" style={linkStyle(false)}>{t("about")}</a>
           </div>
           <div style={{flex:1}}/>
 
           {!loading && (
             user ? (
               <>
+                <a href="#/dashboard" style={{fontSize:13, color:"var(--ink-3)", display:"none"}}>
+                  Dashboard
+                </a>
                 <button onClick={handleLogout} style={{fontSize:13, color:"var(--ink-3)"}}>
-                  Chiqish
+                  {t("logout")}
                 </button>
               </>
             ) : (
@@ -150,14 +193,15 @@ const TopNavWithAuth = ({ route }) => {
                 fontSize:13, color:"var(--ink-2)", border:"1px solid var(--line-2)",
                 padding:"8px 16px"
               }}>
-                Kirish
+                {t("login")}
               </button>
             )
           )}
 
+          <LangSelector/>
           <ThemeToggle/>
           <a href="#/create" className="btn btn-primary" style={{padding:"10px 18px"}}>
-            Profil yaratish <I.arrowR size={14}/>
+            {t("createProfile")} <I.arrowR size={14}/>
           </a>
         </div>
       </header>
@@ -167,14 +211,20 @@ const TopNavWithAuth = ({ route }) => {
   );
 };
 
-/* -app ----  */
+/* ---------- App ---------- */
 const App = () => {
   const [route, setRoute] = useStateApp(parseRoute());
+  const [, setLangState] = useStateApp(getLang());
 
   useEffectApp(() => {
     const onHash = () => { setRoute(parseRoute()); window.scrollTo(0,0); };
     window.addEventListener("hashchange", onHash);
-    return () => window.removeEventListener("hashchange", onHash);
+    const onLang = () => setLangState(getLang());
+    window.addEventListener("wb-lang-change", onLang);
+    return () => {
+      window.removeEventListener("hashchange", onHash);
+      window.removeEventListener("wb-lang-change", onLang);
+    };
   }, []);
 
   let page = null;
@@ -194,7 +244,7 @@ const App = () => {
     <AuthProvider>
       <div>
         <TopNavWithAuth route={route}/>
-        <main key={route.page+(route.id||"")}>{page}</main>
+        <main>{page}</main>
         <Footer/>
       </div>
     </AuthProvider>

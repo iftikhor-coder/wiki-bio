@@ -47,7 +47,7 @@ const SearchBox = ({ autoFocus = true, size = "lg" }) => {
         <input ref={inputRef} value={q}
           onChange={e=>{ setQ(e.target.value); setOpen(true); setActive(0); }}
           onKeyDown={onKey} onFocus={()=>setOpen(true)}
-          placeholder="Ism, brend, kasb qidiring..."
+          placeholder="{t("searchPlaceholder")}"
           style={{
             flex:1, background:"transparent", border:0, outline:"none",
             fontFamily:"var(--font-display)", fontWeight:300, fontStyle:q?"normal":"italic",
@@ -67,7 +67,7 @@ const SearchBox = ({ autoFocus = true, size = "lg" }) => {
           {results.length === 0 ? (
             <div style={{padding:"24px 18px", color:"var(--ink-3)", display:"flex", justifyContent:"space-between", alignItems:"center"}}>
               <span>"{q}" topilmadi</span>
-              <a href="#/create" className="btn-link">Profil yarating <I.arrowR size={11}/></a>
+              <a href="#/create" className="btn-link">{t("createThis")} <I.arrowR size={11}/></a>
             </div>
           ) : (
             <>
@@ -156,7 +156,7 @@ const FeaturedGrid = () => {
           Hali profillar yo'q
         </h2>
         <p style={{color:"var(--ink-2)", marginBottom:28}}>Birinchi profil siz bo'ling!</p>
-        <a href="#/create" className="btn btn-primary">Profil yaratish <I.arrowR size={14}/></a>
+        <a href="#/create" className="btn btn-primary">{t("createProfile")} <I.arrowR size={14}/></a>
       </div>
     </section>
   );
@@ -210,10 +210,10 @@ const StatsStrip = () => {
     <section style={{borderTop:"1px solid var(--line)", borderBottom:"1px solid var(--line)", padding:"36px 0"}}>
       <div className="wrap" style={{display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:32}}>
         {[
-          [stats.total || "0", "Jami profillar"],
-          [stats.live || "0", "Jonli profillar"],
-          [stats.users || "0", "Foydalanuvchilar"],
-          ["Google", "Indekslangan"],
+          [stats.total || "0", {t("totalProfiles")}],
+          [stats.live || "0", {t("liveProfiles")}],
+          [stats.users || "0", {t("users")}],
+          ["Google", {t("indexed")}],
         ].map(([n,l]) => (
           <div key={l}>
             <div className="display tnum" style={{fontSize:44, fontWeight:300}}>{n}</div>
@@ -228,9 +228,9 @@ const StatsStrip = () => {
 /* ---------- How it works ---------- */
 const HowItWorks = () => {
   const steps = [
-    { n:"I", title:"Profil yarating", body:"5 daqiqada to'ldiring — ism, rasm, tarjimayi hol, ijtimoiy tarmoqlar. Bepul." },
-    { n:"II", title:"Biz indekslaymiz", body:"Profilingiz schema.org/Person bilan chiqariladi. Google Indexing API orqali darhol yuboriladi." },
-    { n:"III", title:"Google da ko'rining", body:"Ismingizni yozganda o'ng tomonda rasm va ma'lumotlaringiz chiqishi mumkin — Wikipedia kabi." },
+    { n:"I", title:{t("step1Title")}, body:"5 daqiqada to'ldiring — ism, rasm, tarjimayi hol, ijtimoiy tarmoqlar. Bepul." },
+    { n:"II", title:{t("step2Title")}, body:"Profilingiz schema.org/Person bilan chiqariladi. Google Indexing API orqali darhol yuboriladi." },
+    { n:"III", title:{t("step3Title")}, body:"Ismingizni yozganda o'ng tomonda rasm va ma'lumotlaringiz chiqishi mumkin — Wikipedia kabi." },
   ];
   return (
     <section style={{padding:"100px 0", borderTop:"1px solid var(--line)", borderBottom:"1px solid var(--line)"}}>
@@ -242,7 +242,7 @@ const HowItWorks = () => {
               Google da <em style={{fontStyle:"italic"}}>qanday</em> ko'rinasiz.
             </h2>
             <p style={{color:"var(--ink-2)", lineHeight:1.6, fontSize:15.5, maxWidth:440}}>
-              Wikipedia notablik talabiga ega. WikiBio ega emas. Hikoyangizni to'g'ri yozsangiz — siz ham Google da ko'rinasiz.
+              {t("howDesc")}
             </p>
             <a href="#/create" className="btn btn-primary" style={{marginTop:28}}>
               Boshlash <I.arrowR size={14}/>
@@ -298,7 +298,7 @@ const HomePage = () => {
           <div style={{display:"grid", gridTemplateColumns:"7fr 5fr", gap:80, alignItems:"end"}}>
             <div>
               <div style={{display:"flex", gap:18, alignItems:"center", marginBottom:36}}>
-                <span className="eyebrow">WikiBio · Bepul platforma</span>
+                <span className="eyebrow">{t("discover")} · WikiBio</span>
               </div>
               <h1 className="display" style={{margin:0, fontSize:"clamp(64px, 9vw, 132px)"}}>
                 Dunyo <em style={{fontStyle:"italic", color:"var(--gold)"}}>biografiyasi,</em><br/>
