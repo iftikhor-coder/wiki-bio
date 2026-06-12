@@ -132,6 +132,9 @@ const TopNavWithAuth = ({ route }) => {
           {!loading && (
             user ? (
               <>
+                <a href="#/dashboard" style={{fontSize:13, color:"var(--ink-3)", display:"none"}}>
+                  Dashboard
+                </a>
                 <button onClick={handleLogout} style={{fontSize:13, color:"var(--ink-3)"}}>
                   Chiqish
                 </button>
