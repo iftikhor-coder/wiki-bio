@@ -132,10 +132,7 @@ const TopNavWithAuth = ({ route }) => {
           {!loading && (
             user ? (
               <>
-                <a href="#/dashboard" style={linkStyle(route.page==="dashboard")}>
-                  <I.bell size={14}/> Dashboard
-                </a>
-                <button onClick={handleLogout} style={{fontSize:13, color:"var(--ink-3)", marginLeft:8}}>
+                <button onClick={handleLogout} style={{fontSize:13, color:"var(--ink-3)"}}>
                   Chiqish
                 </button>
               </>
@@ -188,7 +185,7 @@ const App = () => {
     <AuthProvider>
       <div>
         <TopNavWithAuth route={route}/>
-        <main key={route.page+(route.id||"")}>{page}</main>
+        <main>{page}</main>
         <Footer/>
       </div>
     </AuthProvider>
