@@ -35,6 +35,7 @@ const ADMIN_SECTIONS = [
   {id:"profiles",  label:"All Profiles", icon:I.users},
   {id:"imports",   label:"Wikipedia Import", icon:I.globe},
   {id:"analytics", label:"Analytics",    icon:I.trend},
+  {id:"dashboard", label:"Dashboard",    icon:I.eye},
 ];
 
 const AdminSidebar = ({ active, setActive, pendingCount }) => (
@@ -399,6 +400,7 @@ const AdminPage = () => {
             {active==="profiles"  && <AdminAllProfiles/>}
             {active==="imports"   && <AdminImport/>}
             {active==="analytics" && <div style={{color:"var(--ink-3)"}}>Analytics tez kunda...</div>}
+            {active==="dashboard" && (() => { window.location.hash="#/dashboard"; return null; })()}
           </main>
         </div>
       </div>
