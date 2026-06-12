@@ -85,6 +85,12 @@
         if (status) q = q.eq("status",status);
         return await q;
       },
+      async getMyProfiles(userId) {
+  return await sb.from("wb_profiles")
+    .select("*")
+    .eq("created_by", userId)
+    .order("created_at", {ascending: false});
+      },
       async reviewProfile(profileId, action, reviewerId, note="") {
         const newStatus = action==="approve"?"live":action==="reject"?"rejected":"pending";
         const { error:pErr } = await sb.from("wb_profiles").update({status:newStatus, published_at:action==="approve"?new Date().toISOString():null}).eq("id",profileId);
