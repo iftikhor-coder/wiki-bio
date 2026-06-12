@@ -54,16 +54,6 @@ const Field = ({ label, hint, children, full }) => (
   </div>
 );
 
-const Pill = ({ active, onClick, children }) => (
-  <button onClick={onClick} style={{
-    padding:"8px 14px",
-    border:`1px solid ${active ? "var(--gold)" : "var(--line-2)"}`,
-    color: active ? "var(--gold)" : "var(--ink-2)",
-    fontSize:12,
-    background: active ? "color-mix(in srgb, var(--gold) 8%, transparent)" : "transparent",
-  }}>{children}</button>
-);
-
 /* ---------- Step 1 ---------- */
 const StepBasic = ({ data, set }) => (
   <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:28, maxWidth:760}}>
