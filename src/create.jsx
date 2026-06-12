@@ -1,4 +1,4 @@
-/* Create Profile (real Supabase save) */
+/* WikiBio — Create Profile (real Supabase saqlash) */
 
 const { useState: useStateC, useMemo: useMemoC } = React;
 
@@ -64,7 +64,7 @@ const Pill = ({ active, onClick, children }) => (
   }}>{children}</button>
 );
 
-/* --- Step 1 - */
+/* ---------- Step 1 ---------- */
 const StepBasic = ({ data, set }) => (
   <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:28, maxWidth:760}}>
     <Field label="To'liq ism" full>
@@ -97,7 +97,7 @@ const StepBasic = ({ data, set }) => (
   </div>
 );
 
-/* -- Step 2 -- */
+/* ---------- Step 2 ---------- */
 const StepPhoto = ({ data, set }) => {
   const [uploading, setUploading] = useStateC(false);
   const { user } = useAuth();
@@ -111,7 +111,7 @@ const StepPhoto = ({ data, set }) => {
     setUploading(false);
   };
 
-  const stockPhotos = PROFILES.slice(0,6).map(p => p.photo);
+  const stockPhotos = [];
 
   return (
     <div>
@@ -170,7 +170,7 @@ const StepPhoto = ({ data, set }) => {
   );
 };
 
-/* - Step 3 - */
+/* ---------- Step 3 ---------- */
 const StepBio = ({ data, set }) => {
   const sections = data.full_bio || [{title:"Early Life", body:""},{title:"Career", body:""}];
   const update = (i, field, value) => {
@@ -222,7 +222,7 @@ const StepBio = ({ data, set }) => {
   );
 };
 
-/* -- Step 4 - */
+/* ---------- Step 4 ---------- */
 const StepLinks = ({ data, set }) => {
   const kinds = ["instagram","x","linkedin","imdb","site","youtube"];
   const socials = data.socials || [];
@@ -279,7 +279,7 @@ const StepLinks = ({ data, set }) => {
   );
 };
 
-/* -= Step 5 preview --- */
+/* ---------- Step 5 preview ---------- */
 const StepPreview = ({ data }) => (
   <div>
     <div style={{border:"1px solid var(--line-2)", padding:32, background:"color-mix(in srgb, var(--bg-2) 40%, transparent)"}}>
@@ -323,7 +323,7 @@ const StepPreview = ({ data }) => (
   </div>
 );
 
-/* == Success == */
+/* ---------- Success ---------- */
 const SuccessScreen = ({ data, slug }) => (
   <div style={{textAlign:"center", padding:"80px 0"}}>
     <div style={{
@@ -348,7 +348,7 @@ const SuccessScreen = ({ data, slug }) => (
   </div>
 );
 
-/* == Create page == */
+/* ---------- Create page ---------- */
 const CreatePage = () => {
   const { user } = useAuth();
   const [step, setStep] = useStateC(0);
